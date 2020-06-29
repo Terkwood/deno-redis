@@ -706,14 +706,14 @@ test("xinfo", async () => {
       [[key, ">"]],
       { group, consumer: "someone" },
     );
-    /*
+
     const fullStreamInfo = await client.xinfo_stream_full(key);
     assertEquals(fullStreamInfo.length, 2);
     assert(fullStreamInfo.radixTreeKeys > 0);
     assert(fullStreamInfo.radixTreeNodes > 0);
 
     const fullStreamInfoCount = await client.xinfo_stream_full(key, 1);
-   */
+
     // TODO
     // TODO
     // TODO  xinfo_groups
