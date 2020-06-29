@@ -539,6 +539,8 @@ test("xclaim and xpending", async () => {
       [3000, 1],
     );
 
+    // TODO assert claim
+
     await Promise.all(
       [
         client.xadd(key, 4000, { "field": "foo" }),
@@ -555,7 +557,7 @@ test("xclaim and xpending", async () => {
       5000,
     );
 
-    // TODO
+    // TODO assert claim
     // TODO
     // TODO
   });
