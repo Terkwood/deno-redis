@@ -331,7 +331,9 @@ export function parseXConsumerDetail(
   const out: XConsumerDetail[] = [];
   for (const raw in raws) {
     if (isCondArray(raw)) {
+      console.log(`pending raw ${raw}`);
       const data = convertMap(raw);
+
       // TODO
       /*
       (data.get("pending") as string[][]).map((p) => {
