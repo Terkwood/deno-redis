@@ -10,10 +10,12 @@ export interface XId {
   seqNo: bigint;
 }
 
-export interface XMessage {
+export interface XMessage<T extends Flat> {
   xid: XId;
-  field_values: Map<string, string>;
+  field_values: Map<string, T>;
 }
+
+export type Flat = string | number | boolean | bigint;
 
 export interface XKeyId {
   key: string;
@@ -25,8 +27,11 @@ export interface XKeyIdGroup {
   xid: XIdGroupRead;
 }
 
-export type XReadStream = { key: string; messages: XMessage[] };
-export type XReadReply = XReadStream[];
+export type XReadStream<T extends Flat> = {
+  key: string;
+  messages: XMessage<T>[];
+};
+export type XReadReply<T extends Flat> = XReadStream<T>[];
 
 // basic data returned by redis
 export type XReadIdData = [string, string[]];
@@ -76,10 +81,10 @@ export interface XMaxlen {
   elements: number;
 }
 
-export type XClaimReply = XClaimMessages | XClaimJustXId;
-export interface XClaimMessages {
+export type XClaimReply<T extends Flat> = XClaimMessages<T> | XClaimJustXId;
+export interface XClaimMessages<T extends Flat> {
   kind: "messages";
-  messages: XMessage[];
+  messages: XMessage<T>[];
 }
 export interface XClaimJustXId {
   kind: "justxid";
@@ -141,14 +146,14 @@ export interface StartEndCount {
   count: number;
 }
 
-export interface XInfoStream {
+export interface XInfoStream<T extends Flat> {
   length: number;
   radixTreeKeys: number;
   radixTreeNodes: number;
   groups: number;
   lastGeneratedId: XId;
-  firstEntry: XMessage;
-  lastEntry: XMessage;
+  firstEntry: XMessage<T>;
+  lastEntry: XMessage<T>;
 }
 
 // TODO check command name against deno-redis API
@@ -188,10 +193,10 @@ export interface XClaimOpts {
   justXId?: boolean;
 }
 
-export function parseXMessage(
+export function parseXMessage<T extends Flat>(
   raw: XReadIdData,
-): XMessage {
-  let field_values: Map<string, string> = new Map();
+): XMessage<T> {
+  let field_values: Map<string, T> = new Map();
   let f: string | undefined = undefined;
 
   let m = 0;
@@ -199,12 +204,13 @@ export function parseXMessage(
     if (m % 2 === 0) {
       f = data;
     } else if (f) {
-      field_values.set(f, data);
+      field_values.set(f, data as T);
     }
     m++;
   }
 
-  return { xid: parseXId(raw[0]), field_values: field_values };
+  const v: XMessage<T> = { xid: parseXId(raw[0]), field_values };
+  return v;
 }
 
 export function fromRedisArray(raw: ConditionalArray): Map<string, Raw> {
@@ -224,14 +230,15 @@ export function fromRedisArray(raw: ConditionalArray): Map<string, Raw> {
   return field_values;
 }
 
-export function parseXReadReply(
+export function parseXReadReply<T extends Flat>(
   raw: XReadReplyRaw,
-): XReadReply {
-  const out: XReadStream[] = [];
+): XReadReply<T> {
+  const out: XReadStream<T>[] = [];
   for (const [key, idData] of raw) {
     const messages = [];
     for (const rawMsg of idData) {
-      messages.push(parseXMessage(rawMsg));
+      const xmt: XMessage<T> = parseXMessage(rawMsg);
+      messages.push(xmt);
     }
     out.push({ key, messages });
   }
