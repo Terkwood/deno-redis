@@ -332,17 +332,21 @@ export function parseXConsumerDetail(
   for (const raw in raws) {
     if (isCondArray(raw)) {
       const data = convertMap(raw);
-      out.push({
-        name: rawstr(data.get("name")),
-        seenTime: rawbigint(data.get("seen-time")),
-        pelCount: rawnum(data.get("pel-count")),
-        pending: (data.get("pending") as string[][]).map((p) => {
+      // TODO
+      /*
+      (data.get("pending") as string[][]).map((p) => {
           return {
             xid: parseXId(rawstr(p[0])),
             lastDeliveredMs: rawbigint(p[1]),
             timesDelivered: rawnum(p[2]),
           };
-        }),
+        })
+      */
+      out.push({
+        name: rawstr(data.get("name")),
+        seenTime: rawbigint(data.get("seen-time")),
+        pelCount: rawnum(data.get("pel-count")),
+        pending: [],
       });
     }
   }

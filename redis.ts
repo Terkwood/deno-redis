@@ -1447,16 +1447,24 @@ class RedisImpl implements RedisCommands {
           // exact position, nor on the number of fields,
           // new fields may be added in the future.
           if (raw === undefined) throw "no data";
+          console.log(`raww ${JSON.stringify(raw)}`);
           const data: Map<string, Raw> = convertMap(raw);
+          if (data === undefined) throw "no data converted";
+          console.log("hi hi data");
+          console.log(JSON.stringify(data.size));
+          for (const k in data.keys()) {
+            console.log(`\t${k}`);
+          }
 
+          const entries = (data.get("entries") as ConditionalArray).map((raw) =>
+            parseXMessage(raw as XReadIdData)
+          );
           return {
             length: rawnum(data.get("length")),
             radixTreeKeys: rawnum(data.get("radix-tree-keys")),
             radixTreeNodes: rawnum(data.get("radix-tree-nodes")),
             lastGeneratedId: parseXId(rawstr(data.get("last-generated-id"))),
-            entries: (data.get("entries") as ConditionalArray).map((raw) =>
-              parseXMessage(raw as XReadIdData)
-            ),
+            entries,
             groups: parseXGroupDetail(data.get("groups") as ConditionalArray),
           };
         },
