@@ -17,6 +17,8 @@ import {
   BulkNil,
 } from "./command.ts";
 import {
+  Flat,
+  XMessage,
   XMaxlen,
   XReadStreamRaw,
   XId,
@@ -1281,7 +1283,7 @@ class RedisImpl implements RedisCommands {
     ).then((rawId) => parseXId(rawId));
   }
 
-  xclaim(key: string, opts: XClaimOpts, ...xids: XIdInput[]) {
+  xclaim<T extends Flat>(key: string, opts: XClaimOpts, ...xids: XIdInput[]) {
     const args = [];
     if (opts.idle) {
       args.push("IDLE");
@@ -1326,13 +1328,13 @@ class RedisImpl implements RedisCommands {
         return payload;
       }
 
-      const messages = [];
+      const messages: XMessage<T>[] = [];
       for (const r of raw) {
         if (typeof r !== "string") {
           messages.push(parseXMessage(r));
         }
       }
-      const payload: XClaimMessages = { kind: "messages", messages };
+      const payload: XClaimMessages<T> = { kind: "messages", messages };
       return payload;
     });
   }
@@ -1493,7 +1495,7 @@ class RedisImpl implements RedisCommands {
       });
   }
 
-  xrange(
+  xrange<T extends Flat>(
     key: string,
     start: XIdNeg,
     end: XIdPos,
@@ -1505,11 +1507,11 @@ class RedisImpl implements RedisCommands {
       args.push(count);
     }
     return this.execArrayReply<XReadIdData>("XRANGE", ...args).then(
-      (raw) => raw.map((m) => parseXMessage(m)),
+      (raw) => raw.map((m) => parseXMessage<T>(m)),
     );
   }
 
-  xrevrange(
+  xrevrange<T extends Flat>(
     key: string,
     start: XIdPos,
     end: XIdNeg,
@@ -1521,11 +1523,11 @@ class RedisImpl implements RedisCommands {
       args.push(count);
     }
     return this.execArrayReply<XReadIdData>("XREVRANGE", ...args).then(
-      (raw) => raw.map((m) => parseXMessage(m)),
+      (raw) => raw.map((m) => parseXMessage<T>(m)),
     );
   }
 
-  xread(
+  xread<T extends Flat>(
     key_xids: XKeyId[],
     opts?: { count?: number; block?: number },
   ) {
@@ -1551,10 +1553,10 @@ class RedisImpl implements RedisCommands {
     return this.execArrayReply<XReadStreamRaw>(
       "XREAD",
       ...args,
-    ).then((raw) => parseXReadReply(raw));
+    ).then((raw) => parseXReadReply<T>(raw));
   }
 
-  xreadgroup(
+  xreadgroup<T extends Flat>(
     key_xids: XKeyId[],
     { group, consumer, count, block }: XReadGroupOpts,
   ) {
@@ -1584,7 +1586,7 @@ class RedisImpl implements RedisCommands {
     return this.execArrayReply<XReadStreamRaw>(
       "XREADGROUP",
       ...args,
-    ).then((raw) => parseXReadReply(raw));
+    ).then((raw) => parseXReadReply<T>(raw));
   }
 
   xtrim(key: string, maxlen: XMaxlen) {
