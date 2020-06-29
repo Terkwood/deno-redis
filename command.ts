@@ -1,6 +1,7 @@
 import { RedisSubscription } from "./pubsub.ts";
 import { RedisPipeline } from "./pipeline.ts";
 import {
+  Flat,
   XReadReply,
   XReadOpts,
   XReadGroupOpts,
@@ -405,11 +406,11 @@ XCLAIM mystream mygroup Alice 3600000 1526569498055-0
    *    JUSTXID: Return just an array of XIds of messages successfully claimed, without returning the actual message. Using this option means the retry counter is not incremented.
    * @param ids the message XIds to claim
    */
-  xclaim(
+  xclaim<T extends Flat>(
     key: string,
     opts: XClaimOpts,
     ...xids: XIdInput[]
-  ): Promise<XClaimReply>;
+  ): Promise<XClaimReply<T>>;
   /**
    * Removes the specified entries from a stream, 
    * and returns the number of entries deleted,
@@ -509,7 +510,7 @@ XGROUP SETID mystream consumer-group-name 0
     groupName: string,
     xid: XIdInput,
   ): Promise<Status>;
-  xinfostream(key: string): Promise<XInfoStream>;
+  xinfostream<T extends Flat>(key: string): Promise<XInfoStream<T>>;
   /**
    *  returns the entire state of the stream, including entries, groups, consumers and PELs. This form is available since Redis 6.0.
    * @param key The stream key
@@ -582,12 +583,12 @@ XRANGE somestream - +
    * @param end  final XId, or +
    * @param count max number of entries to return
    */
-  xrange(
+  xrange<T extends Flat>(
     key: string,
     start: XIdNeg,
     end: XIdPos,
     count?: number,
-  ): Promise<XMessage[]>;
+  ): Promise<XMessage<T>[]>;
   /**
    * This command is exactly like XRANGE, but with the 
    * notable difference of returning the entries in 
@@ -602,12 +603,12 @@ XRANGE somestream - +
    * @param end  stop at this XId.  for the minimum, specify "-"
    * @param count max number of entries to return
    */
-  xrevrange(
+  xrevrange<T extends Flat>(
     key: string,
     start: XIdPos,
     end: XIdNeg,
     count?: number,
-  ): Promise<XMessage[]>;
+  ): Promise<XMessage<T>[]>;
   /**
    * Read data from one or multiple streams, only returning 
    * entries with an XId greater than the last received XId 
@@ -618,10 +619,10 @@ XRANGE somestream - +
    *                    for each stream, and number of 
    *                    milliseconds for which to block
    */
-  xread(
+  xread<T extends Flat>(
     key_xids: XKeyId[],
     opts?: XReadOpts,
-  ): Promise<XReadReply>;
+  ): Promise<XReadReply<T>>;
   /**
    * The XREADGROUP command is a special version of the XREAD command with support for consumer groups. 
    *  
@@ -632,10 +633,10 @@ XRANGE somestream - +
    *              include a count of records to read, and the number
    *              of milliseconds to block
    */
-  xreadgroup(
+  xreadgroup<T extends Flat>(
     key_xids: XKeyIdGroup[],
     opts: XReadGroupOpts,
-  ): Promise<XReadReply>;
+  ): Promise<XReadReply<T>>;
 
   /**
    * Trims the stream to the indicated number
