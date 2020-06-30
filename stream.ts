@@ -306,7 +306,8 @@ export function parseXGroupDetail(rawGroups: ConditionalArray): XGroupDetail[] {
     if (isCondArray(rawGroup)) {
       const data = convertMap(rawGroup);
 
-      const consDeets = data.get("consumers");
+      // array of arrays
+      const consDeets = data.get("consumers") as ConditionalArray[];
       console.log(`consDeets ${consDeets}`);
       for (const cc of consDeets as ConditionalArray) {
         console.log(`\t ${JSON.stringify(cc)}`);
@@ -320,7 +321,7 @@ export function parseXGroupDetail(rawGroups: ConditionalArray): XGroupDetail[] {
             (data.get("pending") as ConditionalArray),
           ),
           consumers: parseXConsumerDetail(
-            consDeets as ConditionalArray,
+            consDeets,
           ),
         },
       );
@@ -331,13 +332,17 @@ export function parseXGroupDetail(rawGroups: ConditionalArray): XGroupDetail[] {
 }
 
 export function parseXConsumerDetail(
-  raws: ConditionalArray,
+  raws: Raw[][],
 ): XConsumerDetail[] {
   const out: XConsumerDetail[] = [];
+  console.log(`them all ${JSON.stringify(raws)}`);
+
+  //console.log(`emem ${JSON.stringify(mm)}`);
   for (const raw in raws) {
     if (isCondArray(raw)) {
-      console.log(`pending raw ${JSON.stringify(raw)}`);
-      const data = convertMap(raw);
+      const _todo_rrr: Raw[] = raw;
+      console.log(`pending raw ${JSON.stringify(raw as Raw[])}`);
+      const data = convertMap(raw as Raw[]);
 
       // TODO bigint is worthless
       /*const pending = (data.get("pending") as [string, number, number][]).map(
@@ -357,7 +362,7 @@ export function parseXConsumerDetail(
         pelCount: rawnum(data.get("pel-count")),
         pending: [],
       };
-      console.log(`ARR ${JSON.stringify([r.name, r.pelCount])}`);
+      //console.log(`ARR ${JSON.stringify([r.name, r.pelCount])}`);
       out.push(r);
     }
   }
